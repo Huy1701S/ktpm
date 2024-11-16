@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu & Cart System</title>
+    <style>
+        /* Styles for the page */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+        }
+        .menu-item, .cart-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        button {
+            padding: 5px 10px;
+            margin-top: 5px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .cart-item input {
+            width: 40px;
+            text-align: center;
+        }
+        .order-history-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Menu & Cart System</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Menu</h2>
+            <div id="menu"></div>
+        </section>
+        <section>
+            <h2>Cart</h2>
+            <div id="cart"></div>
+            <button onclick="placeOrder()">Place Order</button>
+        </section>
+        <section>
+            <h2>Order History</h2>
+            <div id="order-history"></div>
+        </section>
+    </main>
+    <script>
+        // Mock data
+        const menu = [
+            { id: 1, name: "Pizza Margherita", price: 10.5 },
+            { id: 2, name: "Pasta Carbonara", price: 12.0 },
+        ];
+
+        let cart = [];
+        let orderHistory = [];
+
+        // Function to render the menu
+        function renderMenu() {
+            const menuDiv = document.getElementById("menu");
+            menuDiv.innerHTML = "";
+            menu.forEach(item => {
+                const menuItem = document.createElement("div");
+                menuItem.className = "menu-item";
+                menuItem.innerHTML = 
+                    `<strong>${item.name}</strong> - $${item.price.toFixed(2)}
+                    <button onclick="addToCart(${item.id})">Add to Cart</button>`;
+                menuDiv.appendChild(menuItem);
+            });
+        }
+
+        // Function to render the cart
+        function renderCart() {
+            const cartDiv = document.getElementById("cart");
+            cartDiv.innerHTML = "";
+            if (cart.length === 0) {
+                cartDiv.innerHTML = "<p>Your cart is empty.</p>";
+                return;
+            }
+            cart.forEach(item => {
+                const cartItem = document.createElement("div");
+                cartItem.className = "cart-item";
+                cartItem.innerHTML = 
+                    `<strong>${item.name}</strong> - $${item.price.toFixed(2)} x 
+                    <input type="number" value="${item.quantity}" min="1" 
+                    onchange="updateQuantity(${item.id}, this.value)">
+                    <button onclick="removeFromCart(${item.id})">Remove</button>`;
+                cartDiv.appendChild(cartItem);
+            });
+        }
+
+        // Function to render the order history
+        function renderOrderHistory() {
+            const orderHistoryDiv = document.getElementById("order-history");
+            orderHistoryDiv.innerHTML = "";
+            if (orderHistory.length === 0) {
+                orderHistoryDiv.innerHTML = "<p>No past orders.</p>";
+                return;
+            }
+            orderHistory.forEach(order => {
+                const orderItem = document.createElement("div");
+                orderItem.className = "order-history-item";
+                orderItem.innerHTML = 
+                    `<strong>Order #${order.id}</strong> - Total: $${order.total.toFixed(2)}`;
+                order.history.forEach(item => {
+                    orderItem.innerHTML += `<br> - ${item.name} x ${item.quantity}`;
+                });
+                orderHistoryDiv.appendChild(orderItem);
+            });
+        }
+
+        // Function to add an item to the cart
+        function addToCart(itemId) {
+            const menuItem = menu.find(item => item.id === itemId);
+            const cartItem = cart.find(item => item.id === itemId);
+            if (cartItem) {
+                cartItem.quantity += 1;
+            } else {
+                cart.push({ ...menuItem, quantity: 1 });
+            }
+            renderCart();
+        }
+
+        // Function to remove an item from the cart
+        function removeFromCart(itemId) {
+            cart = cart.filter(item => item.id !== itemId);
+            renderCart();
+        }
+
+        // Function to update the quantity of an item in the cart
+        function updateQuantity(itemId, quantity) {
+            const cartItem = cart.find(item => item.id === itemId);
+            if (cartItem) {
+                cartItem.quantity = parseInt(quantity);
+            }
+            renderCart();
+        }
+
+        // Function to place an order
+        function placeOrder() {
+            if (cart.length === 0) {
+                alert("Your cart is empty.");
+                return;
+            }
+
+            const orderId = orderHistory.length + 1;
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            orderHistory.push({ id: orderId, total, history: [...cart] });
+
+            // Clear the cart after placing the order
+            cart = [];
+            renderCart();
+            renderOrderHistory();
+            alert("Order placed successfully!");
+        }
+
+        // Initial render
+        renderMenu();
+        renderCart();
+        renderOrderHistory();
+    </script>
+</body>
+</html>
